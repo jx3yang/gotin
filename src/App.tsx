@@ -1,33 +1,18 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
+import { PostHeader } from './PostHeader'
+import { ChakraProvider } from '@chakra-ui/react'
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
+    <ChakraProvider>
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <PostHeader username='Ji Xi Yang' title='Train Operator' post='Trains are so fun! I think they should teach embedded systems in kindergarten :o' />
     </div>
+    </ChakraProvider>
   )
 }
 
