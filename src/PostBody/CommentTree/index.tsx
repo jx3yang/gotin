@@ -11,8 +11,8 @@ const CommentCard = ({ comment }: CommentCardProps) => {
   const { id: avatarId, url: avatarUrl } = avatar;
 
   return (
-    <Card maxW='full' boxShadow='none' borderRadius='0'>
-      <CardHeader p='4' pb='0' pt='0'>
+    <Card maxW='full' boxShadow='none' borderRadius='0' p='2' pl='4'>
+      <CardHeader p='0'>
         <Flex flex='1' flexWrap='wrap' gap='2' alignContent='center' alignItems='center'>
           <Avatar name={avatarId} src={avatarUrl} height='18px' width='18px' />
           <Box textAlign='left' fontWeight={'semibold'} lineHeight='tight'>
@@ -23,7 +23,7 @@ const CommentCard = ({ comment }: CommentCardProps) => {
           </Box>
         </Flex>
       </CardHeader>
-      <CardBody p='4' pt='0'>
+      <CardBody p='0'>
         <Text fontSize='sm' textAlign='left'>
           {content}
         </Text>
@@ -42,9 +42,10 @@ export const CommentTree = ({ comments }: CommentTreeProps) => (
       <Stack key={`${index}`} p={0}>
         <CommentCard comment={comment} key={`${index}`} />
         {comment.replies.length > 0 &&
-          <Box pl='4'>
+          <Flex>
+            <Box backgroundColor='gray.300' width={'2px'} ml='6'></Box>
             <CommentTree comments={comment.replies} />
-          </Box>
+          </Flex>
         }
       </Stack>
     ))}

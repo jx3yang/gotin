@@ -3,6 +3,8 @@ import './App.css'
 import { Button, Flex, useColorMode } from '@chakra-ui/react'
 import { Avatar, User, Comment } from './types'
 import { Post } from './Post'
+import { TreeLevelIterator } from './lib/tree-iterator'
+import { ItIterator } from './lib/it-iterator'
 
 function App() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -37,26 +39,36 @@ function App() {
     {
       ...commonComment,
     },
+    {
+      ...commonComment,
+      replies: [
+        {
+          ...commonComment,
+          replies: [commonComment, commonComment],
+        },
+      ],
+    },
   ];
 
   const comments: Comment[] = [...staticComments, ...staticComments, ...staticComments];
+  const commentTreeIterators = comments.map(
+    (comment, index) => new TreeLevelIterator(comment, ({ replies }: Comment) => replies, index));
+  const commentIterator = new ItIterator(commentTreeIterators);
 
   useEffect(() => {
-    const getNewComment = (index: number): Comment => ({ ...comments[index], replies: [] });
     const getNewState = (currentState: Comment[]) => {
-      const { length } = currentState;
-      if (length == 0) {
-        return [getNewComment(0)];
+      if (!commentIterator.hasNext()) {
+        return currentState;
       }
-      const lastComment = currentState[length-1];
-      if (lastComment.replies.length == comments[length-1].replies.length) {
-        if (length == comments.length) {
-          return currentState;
-        }
-        return [...currentState, getNewComment(length)];
+      const { node: newComment, path } = commentIterator.next();
+      if (path.length == 1) {
+        return [...currentState, { ...newComment, replies: [] }];
       }
-      const newReply = comments[length-1].replies[lastComment.replies.length];
-      lastComment.replies.push(newReply);
+      let parentComment = currentState[path[0]];
+      for (let i = 1; i < path.length - 1; i++) {
+        parentComment = parentComment.replies[path[i]];
+      }
+      parentComment.replies.push({ ...newComment, replies: [] });
       return [...currentState];
     }
 
