@@ -21,7 +21,7 @@ export class ItIterator<T> implements Iterator<T> {
     return this.index < this.iterators.length;
   }
 
-  reset () {
+  reset() {
     this.index = 0;
     this.iterators.forEach(it => it.reset());
   }

@@ -6,10 +6,8 @@ interface PostBodyProps {
   comments: Comment[]
 }
 
-export const PostBody = ({ comments }: PostBodyProps) => {
-  return (
-    <Card p={2} boxShadow='none'>
-      <CommentTree comments={comments} />
-    </Card>
-  )
-}
+export const PostBody = ({ comments }: PostBodyProps) => (
+  <Card p={2} boxShadow='none'>
+    <CommentTree comments={comments} />
+  </Card>
+)

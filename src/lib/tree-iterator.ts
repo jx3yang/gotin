@@ -1,14 +1,14 @@
 import { Iterator } from './iterator';
 
-type IteratorItem<T> = {
+export type TreeIteratorItem<T> = {
   node: T
   path: number[]
 }
 
-function levelTraversal<T>(root: T, getChildren: (node: T) => T[], rootIndex: number): IteratorItem<T>[] {
-  const items: IteratorItem<T>[] = [];
-  let currentLevel: IteratorItem<T>[] = [{ node: root, path: [rootIndex] }];
-  let nextLevel: IteratorItem<T>[] = [];
+function levelTraversal<T>(root: T, getChildren: (node: T) => T[], rootIndex: number): TreeIteratorItem<T>[] {
+  const items: TreeIteratorItem<T>[] = [];
+  let currentLevel: TreeIteratorItem<T>[] = [{ node: root, path: [rootIndex] }];
+  let nextLevel: TreeIteratorItem<T>[] = [];
 
   while (currentLevel.length > 0) {
     currentLevel.forEach(item => {
@@ -25,8 +25,8 @@ function levelTraversal<T>(root: T, getChildren: (node: T) => T[], rootIndex: nu
   return items;
 }
 
-export class TreeLevelIterator<T> implements Iterator<IteratorItem<T>> {
-  levelTraversalNodes: IteratorItem<T>[]
+export class TreeLevelIterator<T> implements Iterator<TreeIteratorItem<T>> {
+  levelTraversalNodes: TreeIteratorItem<T>[]
   index: number
 
   constructor(root: T, getChildren: (node: T) => T[], rootIndex: number) {

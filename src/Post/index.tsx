@@ -1,22 +1,20 @@
 import { Card, CardBody, CardHeader } from "@chakra-ui/react"
+import { PostController } from "../lib/post-controller"
 import { PostBody } from "../PostBody"
 import { PostHeader } from "../PostHeader"
-import { Comment, User } from "../types"
 
 interface PostProps {
-  author: User
-  post: string
-  comments: Comment[]
+  postController: PostController
 }
 
-export const Post = ({ author, post, comments }: PostProps) => {
+export const Post = ({ postController }: PostProps) => {
   return (
-    <Card maxW={600}>
+    <Card maxW={600} minW={600}>
       <CardHeader p={0}>
-        <PostHeader author={author} post={post} />
+        <PostHeader author={postController.getAuthor()} post={postController.getPost()} />
       </CardHeader>
       <CardBody p={0}>
-        <PostBody comments={comments} />
+        <PostBody comments={postController.getCurrentComments()} />
       </CardBody>
     </Card>
   )
