@@ -9,9 +9,10 @@ import { User } from '../types'
 interface PostHeaderProps {
   author: User
   post: string
+  focusInput: () => void
 };
 
-export const PostHeader = ({ author, post }: PostHeaderProps) => {
+export const PostHeader = ({ author, post, focusInput }: PostHeaderProps) => {
   const { username, title, avatar } = author;
   const { id: avatarId, url: avatarUrl } = avatar;
   const userHasLiked = useContext(PostUserHasLikedContext);
@@ -69,10 +70,20 @@ export const PostHeader = ({ author, post }: PostHeaderProps) => {
         </Flex>
         <Box borderTop='1px' borderColor={'gray.300'} width='100%'>
           <Flex flex='1' pt='2'>
-            <Button flex='1' variant='ghost' leftIcon={userHasLiked ? <Box color={'blue.300'}><AiFillLike /></Box> : <AiOutlineLike />} onClick={likeFunction}>
+            <Button
+              flex='1'
+              variant='ghost'
+              leftIcon={userHasLiked ? <Box color={'blue.300'}><AiFillLike /></Box> : <AiOutlineLike />}
+              onClick={likeFunction}
+            >
               Like
             </Button>
-            <Button flex='1' variant='ghost' leftIcon={<BiChat />}>
+            <Button
+              flex='1'
+              variant='ghost'
+              leftIcon={<BiChat />}
+              onClick={focusInput}
+            >
               Comment
             </Button>
           </Flex>

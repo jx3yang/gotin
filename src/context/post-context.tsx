@@ -1,7 +1,8 @@
-import { Context, createContext, Provider, useEffect, useMemo, useState } from 'react'
+import { Context, createContext, Provider, useContext, useEffect, useMemo, useState } from 'react'
 import { allPosts } from '../data/posts';
 import { PostController } from '../lib/post-controller';
 import { PostStats } from '../types';
+import { UserContext } from './user-context';
 
 type PostState = {
   postControllers: PostController[]
@@ -19,6 +20,7 @@ export const PostSwitchContext = createContext<() => void>(() => {});
 export const PostLikeContext = createContext<() => void>(() => {});
 export const PostStatsContext = createContext<PostStats>({ likes: 0, numComments: 0 });
 export const PostUserHasLikedContext = createContext<boolean>(false);
+export const PostCommentContext = createContext<(content: string) => void>(() => {});
 
 interface Props {
   children: JSX.Element
@@ -37,6 +39,7 @@ const contextsReducer = (pairs: { context: Context<any>, value: any }[], childre
 
 export const PostProvider = ({ children }: Props) => {
   const [postState, setPostState] = useState<PostState>(getStartState());
+  const user = useContext(UserContext);
 
   const stepContext = () => {
     setPostState(currentState => {
@@ -62,6 +65,14 @@ export const PostProvider = ({ children }: Props) => {
       postControllers[currentIndex].userLikeToggle();
       return {...currentState};
     })
+  };
+
+  const addCommentContext = (content: string) => {
+    setPostState(currentState => {
+      const { postControllers, currentIndex } = currentState;
+      postControllers[currentIndex].addUserComment(user, content);
+      return {...currentState};
+    });
   };
 
   useEffect(() => {
@@ -98,6 +109,10 @@ export const PostProvider = ({ children }: Props) => {
     {
       context: PostUserHasLikedContext,
       value: postState.postControllers[postState.currentIndex].getUserHasLiked(),
+    },
+    {
+      context: PostCommentContext,
+      value: addCommentContext,
     },
   ], children);
 }

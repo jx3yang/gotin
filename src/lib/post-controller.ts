@@ -3,7 +3,11 @@ import { ItIterator } from './it-iterator'
 import { Iterator } from './iterator'
 import { TreeIteratorItem, TreeLevelIterator } from './tree-iterator'
 
-const getNewComments = (currentComments: Comment[], iterator: Iterator<TreeIteratorItem<Comment>>) => {
+const getNewComments = (
+  currentComments: Comment[],
+  iterator: Iterator<TreeIteratorItem<Comment>>,
+  userAddedCommentsIndices: number[],
+) => {
   if (!iterator.hasNext()) {
     return { comments: currentComments, hasChanged: false };
   }
@@ -12,7 +16,16 @@ const getNewComments = (currentComments: Comment[], iterator: Iterator<TreeItera
   if (path.length == 1) {
     return { comments: [...currentComments, { ...newComment, replies: [] }], hasChanged: true };
   }
-  let parentComment = currentComments[path[0]];
+  let index = path[0];
+  for (let i = 0; i < userAddedCommentsIndices.length; i++) {
+    if (userAddedCommentsIndices[i] <= index) {
+      index++;
+    } else {
+      break;
+    }
+  }
+
+  let parentComment = currentComments[index];
   for (let i = 1; i < path.length - 1; i++) {
     parentComment = parentComment.replies[path[i]];
   }
@@ -24,6 +37,7 @@ export class PostController {
   commentTreeIterator: Iterator<TreeIteratorItem<Comment>>
   postData: PostData
   userHasLiked: boolean
+  userAddedCommentsIndices: number[]
 
   constructor(post: string, staticComments: Comment[], author: User) {
     this.postData = {
@@ -38,10 +52,15 @@ export class PostController {
     this.commentTreeIterator = new ItIterator(
       staticComments.map((comment, index) => new TreeLevelIterator(comment, ({ replies }: Comment) => replies, index)));
     this.userHasLiked = false;
+    this.userAddedCommentsIndices = [];
   }
 
   step() {
-    const { comments, hasChanged } = getNewComments(this.postData.comments, this.commentTreeIterator);
+    const { comments, hasChanged } = getNewComments(
+      this.postData.comments,
+      this.commentTreeIterator,
+      this.userAddedCommentsIndices,
+    );
     if (hasChanged) {
       this.postData.comments = comments;
       this.postData.stats.numComments++;
@@ -92,5 +111,12 @@ export class PostController {
       this.incrementLike();
       this.userHasLiked = true;
     }
+  }
+
+  addUserComment(user: User, content: string) {
+    const comment = { author: user, content, replies: [] };
+    this.postData.comments.push({...comment});
+    this.postData.stats.numComments++;
+    this.userAddedCommentsIndices.push(this.postData.comments.length - 1);
   }
 };
