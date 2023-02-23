@@ -1,21 +1,30 @@
-import { Avatar, Comment, PostData, User } from '../types'
+import { Comment, PostData } from '../types'
+import { allUsers } from './users'
 
-const authorAvatar: Avatar = {
-  id: 'jx3yang',
-  url: 'https://avatars.githubusercontent.com/u/65411020?v=4',
-};
+const getUser = (index: number) => allUsers[index % allUsers.length];
 
-const author: User = {
-  username: 'Ji Xi Yang',
-  title: 'Train operator',
-  avatar: authorAvatar,
-};
+let currentUserIndex = 0;
+
+const withRandomAuthors = (comments: Comment[]) => {
+  return comments.map(comment => {
+    const copy = {...comment};
+    copy.author = getUser(currentUserIndex++);
+    copy.replies = withRandomAuthors(copy.replies);
+    return copy;
+  });
+}
+
+const author = getUser(currentUserIndex++);
 
 const post = 'Trains are so fun! I think they should teach embedded systems in kindergarten :o';
 const commonComment: Comment = {
+  id: 0,
   author,
   content: "Trains are very fun! I especially like the part where you learn to sleep in the lab. Definitely agree with the kindergarten part lol",
   replies: [],
+  stats: {
+    likes: 0,
+  },
 };
 const staticComments: Comment[] = [
   {
@@ -39,13 +48,18 @@ const staticComments: Comment[] = [
   },
 ];
 
-const comments: Comment[] = [...staticComments, ...staticComments, ...staticComments];
+const comments: Comment[] = withRandomAuthors([...staticComments, ...staticComments, ...staticComments]);
 
+const author2 = getUser(currentUserIndex++);
 const post2 = "Should I go to UWaterloo or UofT??";
 const commonComment2: Comment = {
-  author,
+  id: 0,
+  author: author2,
   content: "Lol only UW rejects go to UofT",
   replies: [],
+  stats: {
+    likes: 0,
+  },
 };
 const staticComments2: Comment[] = [
   {
@@ -71,7 +85,7 @@ const staticComments2: Comment[] = [
     ],
   },
 ];
-const comments2: Comment[] = [...staticComments2, ...staticComments2, ...staticComments2];
+const comments2: Comment[] = withRandomAuthors([...staticComments2, ...staticComments2, ...staticComments2]);
 
 const add = (a: number, b: number) => a + b;
 const getNumComments = ({ replies }: Comment): number => replies.map(getNumComments).reduce(add, 1);
@@ -87,7 +101,7 @@ const allPosts: PostData[] = [
     },
   },
   {
-    author,
+    author: author2,
     post: post2,
     comments: comments2,
     stats: {

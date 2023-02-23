@@ -59,10 +59,12 @@ export const PostHeader = ({ author, post, focusInput }: PostHeaderProps) => {
         }}
       >
         <Flex width={'100%'}>
-          <Flex justifyContent={'center'} alignItems='center'>
-            <Box color={'blue.300'}><AiFillLike size={'12px'} /></Box>
-            <Text pl='1' fontSize={'xs'}>{stats.likes}</Text>
-          </Flex>
+          {stats.likes > 0 &&
+            <Flex justifyContent={'center'} alignItems='center'>
+              <Box color={'blue.300'}><AiFillLike size={'12px'} /></Box>
+              <Text pl='1' fontSize={'xs'}>{stats.likes}</Text>
+            </Flex>
+          }
           <Flex justifyContent={'center'} alignItems='center' ml='auto'>
             <Box><BiChat size={'12px'} /></Box>
             <Text pl='1' fontSize={'xs'}>{stats.numComments} comments</Text>

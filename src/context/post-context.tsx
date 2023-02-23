@@ -21,6 +21,8 @@ export const PostLikeContext = createContext<() => void>(() => {});
 export const PostStatsContext = createContext<PostStats>({ likes: 0, numComments: 0 });
 export const PostUserHasLikedContext = createContext<boolean>(false);
 export const PostCommentContext = createContext<(content: string) => void>(() => {});
+export const PostCommentLikeContext = createContext<(id: number) => void>(() => {});
+export const PostUserLikedCommentsContext = createContext<Set<number>>(new Set());
 
 interface Props {
   children: JSX.Element
@@ -75,6 +77,14 @@ export const PostProvider = ({ children }: Props) => {
     });
   };
 
+  const likeCommentContext = (id: number) => {
+    setPostState(currentState => {
+      const { postControllers, currentIndex } = currentState;
+      postControllers[currentIndex].userToggleCommentLike(id);
+      return {...currentState};
+    });
+  };
+
   useEffect(() => {
     const intervalId = setInterval(() => {
       stepContext();
@@ -113,6 +123,14 @@ export const PostProvider = ({ children }: Props) => {
     {
       context: PostCommentContext,
       value: addCommentContext,
+    },
+    {
+      context: PostCommentLikeContext,
+      value: likeCommentContext,
+    },
+    {
+      context: PostUserLikedCommentsContext,
+      value: postState.postControllers[postState.currentIndex].getUserLikedComments(),
     },
   ], children);
 }

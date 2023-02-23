@@ -1,4 +1,7 @@
-import { Avatar, Box, Flex, Text, Card, CardBody, CardHeader, Stack, useColorMode } from '@chakra-ui/react';
+import { Avatar, Box, Flex, Text, Card, CardBody, CardHeader, Stack, useColorMode, Button } from '@chakra-ui/react';
+import { useContext } from 'react';
+import { AiFillLike } from 'react-icons/ai';
+import { PostCommentLikeContext, PostUserLikedCommentsContext } from '../../context/post-context';
 import { Avatar as AvatarType, Comment } from '../../types';
 
 interface CommentCardProps {
@@ -6,8 +9,10 @@ interface CommentCardProps {
 }
 
 const CommentCard = ({ comment }: CommentCardProps) => {
-  const { author, content } = comment;
+  const { id, author, content } = comment;
   const { username, title } = author;
+  const likeComment = useContext(PostCommentLikeContext);
+  const userLikedComments = useContext(PostUserLikedCommentsContext);
 
   return (
     <Card maxW='full' boxShadow='none' borderRadius='0' p='2' pt='4'>
@@ -25,6 +30,34 @@ const CommentCard = ({ comment }: CommentCardProps) => {
         <Text fontSize='sm' textAlign='left'>
           {content}
         </Text>
+        <Flex gap='2' alignItems={'center'} pt='2'>
+          <Button
+            variant={'outline'} p='0' height={'5'} m='0'
+            onClick={() => {
+              likeComment(id)
+            }}
+          >
+            <Text
+              fontSize='xs'
+              fontWeight={'bold'}
+              color={userLikedComments.has(id) ? 'blue.300' : ''}
+            >
+              Like
+            </Text>
+          </Button>
+          {comment.stats.likes > 0 &&
+          <Flex alignItems={'center'} gap='1'>
+            <Box color={'blue.300'}><AiFillLike size={'12px'} /></Box>
+            <Text fontSize='xs' fontWeight={'light'}> {comment.stats.likes} </Text>
+          </Flex>
+          }
+          <Text fontSize='xs' fontWeight={'light'}>|</Text>
+          <Button
+            variant={'ghost'} p='0' height={'5'} m='0'
+          >
+            <Text fontSize='xs' fontWeight={'bold'}> Reply </Text>
+          </Button>
+        </Flex>
       </CardBody>
     </Card>
   )
@@ -54,7 +87,7 @@ export const CommentTree = ({ comments }: CommentTreeProps) => (
   comments.length > 0
     ? <Stack spacing={'0'}>
       {comments.slice(0).reverse().map((comment, index) => (
-        <Flex>
+        <Flex key={`${index}`}>
           <AvatarBox avatar={comment.author.avatar} />
           <Stack key={`${index}`} p={0} spacing='0'>
             <CommentCard comment={comment} key={`${index}`} />

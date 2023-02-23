@@ -9,10 +9,16 @@ export type User = {
   avatar: Avatar
 }
 
+export type CommentStats = {
+  likes: number
+}
+
 export type Comment = {
+  id: number
   author: User
   content: string
   replies: Comment[]
+  stats: CommentStats
 }
 
 export type PostStats = {

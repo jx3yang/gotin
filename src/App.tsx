@@ -23,7 +23,6 @@ function App() {
         zIndex={200}
         alignItems='center'
         width='100%'
-        // backgroundColor={'var(--chakra-colors-chakra-body-bg)'}
         backgroundColor={ colorMode === 'dark' ? 'gray.700' : 'gray.300' }
       >
         <Button onClick={toggle}>
