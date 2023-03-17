@@ -1,5 +1,5 @@
 import { Context, createContext, Provider, useContext, useEffect, useMemo, useState } from 'react'
-import { allPosts } from '../data/posts';
+import { nonAnonPosts, anonPosts } from '../data/posts';
 import { PostController } from '../lib/post-controller';
 import { PostStats } from '../types';
 import { UserContext } from './user-context';
@@ -9,22 +9,30 @@ type PostState = {
   currentIndex: number
 }
 
-const getStartState = () => ({
-  postControllers: allPosts.map(({ post, comments, author }) => new PostController(post, comments, author)),
-  currentIndex: 0,
+type PostsState = {
+  nonAnonPostControllers: PostController[]
+  anonPostControllers: PostController[]
+  anonActive: boolean
+}
+
+const getStartPostsState = () => ({
+  nonAnonPostControllers: nonAnonPosts.map(({ post, comments, author }) => new PostController(post, comments, author)),
+  anonPostControllers: anonPosts.map(({ post, comments, author }) => new PostController(post, comments, author)),
+  anonActive: false,
 })
 
-export const PostContext = createContext<PostState>(getStartState());
+export const PostContext = createContext<PostsState>(getStartPostsState());
 export const PostStepContext = createContext<() => void>(() => {});
 export const PostSwitchContext = createContext<() => void>(() => {});
-export const PostLikeContext = createContext<() => void>(() => {});
-export const PostStatsContext = createContext<PostStats>({ likes: 0, numComments: 0 });
-export const PostUserHasLikedContext = createContext<boolean>(false);
-export const PostCommentContext = createContext<(content: string) => void>(() => {});
-export const PostCommentLikeContext = createContext<(id: number) => void>(() => {});
-export const PostUserLikedCommentsContext = createContext<Set<number>>(new Set());
+export const PostLikeContext = createContext<(index: number) => void>(() => {});
+export const PostGetStatsContext = createContext<(index: number) => PostStats>(() => ({ likes: 0, numComments: 0 }));
+export const PostUserHasLikedContext = createContext<(index: number) => boolean>(() => false);
+export const PostCommentContext = createContext<(content: string, index: number) => void>(() => {});
+export const PostCommentLikeContext = createContext<(id: number, index: number) => void>(() => {});
+export const PostUserLikedCommentsContext = createContext<(index: number) => Set<number>>(() => new Set());
 
 interface Props {
+  isStatic: boolean
   children: JSX.Element
 }
 
@@ -39,98 +47,187 @@ const providersReducer = (pairs: { provider: Provider<any>, value: any }[], chil
 const contextsReducer = (pairs: { context: Context<any>, value: any }[], children: JSX.Element) =>
   providersReducer(pairs.map(({ context, value }) => ({ provider: context.Provider, value })), children);
 
-export const PostProvider = ({ children }: Props) => {
-  const [postState, setPostState] = useState<PostState>(getStartState());
+export const PostProvider = ({ isStatic, children }: Props) => {
+  const [postsState, setPostsState] = useState<PostsState>(getStartPostsState());
   const user = useContext(UserContext);
 
-  const stepContext = () => {
-    setPostState(currentState => {
-      const { postControllers, currentIndex } = currentState;
-      postControllers[currentIndex].step();
-      return {...currentState};
+  const shuffle = (a: number[]) => {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  const stepContext1 = () => {
+    setPostsState(currentState => {
+      const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
+      if (anonActive) {
+        const order = shuffle(Array(anonPostControllers.length).fill(0).map((_, index) => index));
+        for (let i = 0; i < anonPostControllers.length; ++i) {
+          if (anonPostControllers[order[i]].step()) {
+            break;
+          }
+        }
+        return {...currentState};
+      } else {
+        const order = shuffle(Array(nonAnonPostControllers.length).fill(0).map((_, index) => index));
+        for (let i = 0; i < nonAnonPostControllers.length; ++i) {
+          if (nonAnonPostControllers[order[i]].step()) {
+            break;
+          }
+        }
+        return {...currentState};
+      }
     });
   };
 
-  const switchContext = () => {
-    setPostState(currentState => {
-      const { currentIndex } = currentState;
+  const stepLikes1 = () => {
+    setPostsState(currentState => {
+      const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
+      if (anonActive) {
+        const order = shuffle(Array(anonPostControllers.length).fill(0).map((_, index) => index));
+        for (let i = 0; i < anonPostControllers.length; ++i) {
+          if (anonPostControllers[order[i]].stepLikes()) {
+            break;
+          }
+        }
+        return {...currentState};
+      } else {
+        const order = shuffle(Array(nonAnonPostControllers.length).fill(0).map((_, index) => index));
+        for (let i = 0; i < nonAnonPostControllers.length; ++i) {
+          if (nonAnonPostControllers[order[i]].stepLikes()) {
+            break;
+          }
+        }
+        return {...currentState};
+      }
+    });
+  };
+
+  const switchContext1 = () => {
+    setPostsState(currentState => {
+      const { anonActive } = currentState;
       return {
         ...currentState,
-        currentIndex: 1 - currentIndex,
+        anonActive: !anonActive,
       };
     });
   };
 
-  const likeContext = () => {
-    setPostState(currentState => {
-      const { postControllers, currentIndex } = currentState;
-      postControllers[currentIndex].userLikeToggle();
-      return {...currentState};
-    })
-  };
-
-  const addCommentContext = (content: string) => {
-    setPostState(currentState => {
-      const { postControllers, currentIndex } = currentState;
-      postControllers[currentIndex].addUserComment(user, content);
-      return {...currentState};
+  const likeContext1 = (index: number) => {
+    setPostsState(currentState => {
+      const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
+      if (anonActive) {
+        anonPostControllers[index].userLikeToggle();
+        return {...currentState};
+      } else {
+        nonAnonPostControllers[index].userLikeToggle();
+        return {...currentState};
+      }
     });
   };
 
-  const likeCommentContext = (id: number) => {
-    setPostState(currentState => {
-      const { postControllers, currentIndex } = currentState;
-      postControllers[currentIndex].userToggleCommentLike(id);
-      return {...currentState};
+  const addCommentContext1 = (content: string, index: number) => {
+    setPostsState(currentState => {
+      const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
+      if (anonActive) {
+        anonPostControllers[index].addUserComment(user, content);
+        return {...currentState};
+      } else {
+        nonAnonPostControllers[index].addUserComment(user, content);
+        return {...currentState};
+      }
     });
+  };
+
+  const likeCommentContext1 = (id: number, index: number) => {
+    setPostsState(currentState => {
+      const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
+      if (anonActive) {
+        anonPostControllers[index].userToggleCommentLike(id);
+        return {...currentState};
+      } else {
+        nonAnonPostControllers[index].userToggleCommentLike(id);
+        return {...currentState};
+      }
+    });
+  };
+
+  const getStats = (index: number) => {
+    const { nonAnonPostControllers, anonPostControllers, anonActive } = postsState;
+    if (anonActive) {
+      return anonPostControllers[index].getStats();
+    } else {
+      return nonAnonPostControllers[index].getStats();
+    }
+  };
+
+  const getUserHasLiked = (index: number) => {
+    const { nonAnonPostControllers, anonPostControllers, anonActive } = postsState;
+    if (anonActive) {
+      return anonPostControllers[index].getUserHasLiked();
+    } else {
+      return nonAnonPostControllers[index].getUserHasLiked();
+    }
+  };
+
+  const getUserLikedComments = (index: number) => {
+    const { nonAnonPostControllers, anonPostControllers, anonActive } = postsState;
+    if (anonActive) {
+      return anonPostControllers[index].getUserLikedComments();
+    } else {
+      return nonAnonPostControllers[index].getUserLikedComments();
+    }
   };
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      stepContext();
-    }, 2000);
+    const stepInterval = setInterval(() => {
+      stepContext1();
+    }, isStatic ? 0 : 2000);
+
+    const likesInterval = setInterval(() => {
+      stepLikes1();
+    }, isStatic ? 0 : 1000);
 
     return () => {
-      clearInterval(intervalId);
+      clearInterval(stepInterval);
+      clearInterval(likesInterval);
     }
   }, []);
 
   return contextsReducer([
     {
       context: PostContext,
-      value: postState,
-    },
-    {
-      context: PostStepContext,
-      value: stepContext,
+      value: postsState
     },
     {
       context: PostSwitchContext,
-      value: switchContext,
+      value: switchContext1,
     },
     {
       context: PostLikeContext,
-      value: likeContext,
+      value: likeContext1,
     },
     {
-      context: PostStatsContext,
-      value: postState.postControllers[postState.currentIndex].getStats(),
+      context: PostGetStatsContext,
+      value: getStats,
     },
     {
       context: PostUserHasLikedContext,
-      value: postState.postControllers[postState.currentIndex].getUserHasLiked(),
+      value: getUserHasLiked,
     },
     {
       context: PostCommentContext,
-      value: addCommentContext,
+      value: addCommentContext1,
     },
     {
       context: PostCommentLikeContext,
-      value: likeCommentContext,
+      value: likeCommentContext1,
     },
     {
       context: PostUserLikedCommentsContext,
-      value: postState.postControllers[postState.currentIndex].getUserLikedComments(),
+      value: getUserLikedComments,
     },
   ], children);
 }

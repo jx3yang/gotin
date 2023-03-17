@@ -6,9 +6,10 @@ import { Avatar as AvatarType, Comment } from '../../types';
 
 interface CommentCardProps {
   comment: Comment
+  index: number
 }
 
-const CommentCard = ({ comment }: CommentCardProps) => {
+const CommentCard = ({ comment, index }: CommentCardProps) => {
   const { id, author, content } = comment;
   const { username, title } = author;
   const likeComment = useContext(PostCommentLikeContext);
@@ -34,13 +35,13 @@ const CommentCard = ({ comment }: CommentCardProps) => {
           <Button
             variant={'outline'} p='0' height={'5'} m='0'
             onClick={() => {
-              likeComment(id)
+              likeComment(id, index)
             }}
           >
             <Text
               fontSize='xs'
               fontWeight={'bold'}
-              color={userLikedComments.has(id) ? 'blue.300' : ''}
+              color={userLikedComments(index).has(id) ? 'blue.300' : ''}
             >
               Like
             </Text>
@@ -81,18 +82,19 @@ const AvatarBox = ({ avatar }: AvatarBoxProps) => {
 
 interface CommentTreeProps {
   comments: Comment[]
+  index: number
 }
 
-export const CommentTree = ({ comments }: CommentTreeProps) => (
+export const CommentTree = ({ comments, index }: CommentTreeProps) => (
   comments.length > 0
     ? <Stack spacing={'0'}>
-      {comments.slice(0).reverse().map((comment, index) => (
-        <Flex key={`${index}`}>
+      {comments.slice(0).reverse().map((comment, _index) => (
+        <Flex key={`${_index}`}>
           <AvatarBox avatar={comment.author.avatar} />
-          <Stack key={`${index}`} p={0} spacing='0'>
-            <CommentCard comment={comment} key={`${index}`} />
+          <Stack key={`${_index}`} p={0} spacing='0'>
+            <CommentCard comment={comment} key={`${_index}`} index={index} />
             {comment.replies.length > 0 &&
-              <CommentTree comments={comment.replies} />
+              <CommentTree comments={comment.replies} index={index} />
             }
           </Stack>
         </Flex>

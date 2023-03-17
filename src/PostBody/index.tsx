@@ -8,9 +8,10 @@ interface PostBodyProps {
   comments: Comment[]
   user: User
   inputRef: RefObject<HTMLInputElement>
+  index: number
 }
 
-export const PostBody = ({ user, comments, inputRef }: PostBodyProps) => {
+export const PostBody = ({ user, comments, inputRef, index }: PostBodyProps) => {
   const addComment = useContext(PostCommentContext);
   const [inputValue, setInputValue] = useState("");
 
@@ -24,7 +25,7 @@ export const PostBody = ({ user, comments, inputRef }: PostBodyProps) => {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (inputValue != "") {
-                  addComment(inputValue);
+                  addComment(inputValue, index);
                 }
                 setInputValue("");
               }}
@@ -41,7 +42,7 @@ export const PostBody = ({ user, comments, inputRef }: PostBodyProps) => {
         </Flex>
       </CardHeader>
       <CardBody pt='0'>
-        <CommentTree comments={comments} />
+        <CommentTree comments={comments} index={index} />
       </CardBody>
     </Card>
   )

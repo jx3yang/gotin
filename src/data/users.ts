@@ -32,12 +32,43 @@ export const theUser: User = {
   avatar: theAvatar,
 };
 
+export const theUserAnon: User = {
+  username: 'You',
+  title: 'Anon',
+  avatar: theAvatar,
+}
+
 const allAvatars: Avatar[] =
 [user0, user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11, user12, user13, user14, user15, user16, user17, user18, user19]
 .map((url, index) => ({ id: `user${index}`, url }));
 
+const userNames: string[] = [
+  'James Smith', 'Emily Johnson', 'Michael Brown', 'Sarah Wilson', 'Christopher Davis',
+  'Jennifer Garcia', 'William Martinez', 'Elizabeth Anderson', 'David Taylor', 'Maria Hernandez',
+];
+
+const anons: string[] = [
+  '9416', '5825', '9677', '9387', '2577',
+  '4782', '3129', '5090', '2789', '5743'
+].map(v => `User ${v}`);
+
+export const nonAnonUsers: User[] = userNames.map((username, index) => ({
+  username,
+  title: 'Student',
+  avatar: allAvatars[index],
+}));
+
+export const anonUsers: User[] = anons.map((username, index) => ({
+  username,
+  title: 'Anon',
+  avatar: allAvatars[index + 10],
+}));
+
+const allUserNames = [...userNames, ...anons];
+
 export const allUsers: User[] = allAvatars.map((avatar, index) => ({
-  username: `User ${index}`,
-  title: 'Train operator',
+  // username: `User ${index}`,
+  username: allUserNames[index],
+  title: 'Student',
   avatar,
 }));

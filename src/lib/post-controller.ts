@@ -8,12 +8,16 @@ const getNewComments = (
   iterator: Iterator<TreeIteratorItem<Comment>>,
   userAddedCommentsIndices: number[],
   nextId: number,
+  targetNumLikes: Map<number, number>,
 ) => {
   if (!iterator.hasNext()) {
     return { comments: currentComments, hasChanged: false };
   }
   const item = iterator.next();
   const { node: newComment, path } = item;
+  if (newComment.stats.likes > 0) {
+    targetNumLikes.set(nextId, newComment.stats.likes);
+  }
   if (path.length == 1) {
     return { comments: [...currentComments, { ...newComment, replies: [], id: nextId, stats: { likes: 0 } }], hasChanged: true };
   }
@@ -41,6 +45,7 @@ export class PostController {
   userAddedCommentsIndices: number[]
   nextId: number
   userLikedComments: Set<number>
+  targetNumLikes: Map<number, number>
 
   constructor(post: string, staticComments: Comment[], author: User) {
     this.postData = {
@@ -58,6 +63,7 @@ export class PostController {
     this.userAddedCommentsIndices = [];
     this.nextId = 0;
     this.userLikedComments = new Set<number>();
+    this.targetNumLikes = new Map<number, number>();
   }
 
   step() {
@@ -66,12 +72,34 @@ export class PostController {
       this.commentTreeIterator,
       this.userAddedCommentsIndices,
       this.nextId,
+      this.targetNumLikes,
     );
     if (hasChanged) {
       this.postData.comments = comments;
       this.postData.stats.numComments++;
       this.nextId++;
+      return true;
     }
+    return false;
+  }
+
+  stepLikes() {
+    if (this.targetNumLikes.size > 0) {
+      const keys = [...this.targetNumLikes.keys()];
+      const id = keys[Math.floor(Math.random() * keys.length)];
+      const numLikesRemaining = this.targetNumLikes.get(id)!;
+      const comment = this.findComment(id, this.postData.comments);
+      if (comment) {
+        comment.stats.likes++;
+      }
+      if (numLikesRemaining == 1) {
+        this.targetNumLikes.delete(id);
+      } else {
+        this.targetNumLikes.set(id, numLikesRemaining-1);
+      }
+      return true;
+    }
+    return false;
   }
 
   getCurrentComments() {

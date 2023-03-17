@@ -1,5 +1,5 @@
 import { Card, CardBody, CardHeader } from "@chakra-ui/react"
-import { useContext, useRef } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import { UserContext } from "../context/user-context"
 import { PostController } from "../lib/post-controller"
 import { PostBody } from "../PostBody"
@@ -7,15 +7,28 @@ import { PostHeader } from "../PostHeader"
 
 interface PostProps {
   postController: PostController
+  index: number
 }
 
-export const Post = ({ postController }: PostProps) => {
+export const Post = ({ postController, index }: PostProps) => {
   const user = useContext(UserContext);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [showComments, setShowComments] = useState(false);
 
   const focusInput = () => {
+    if (!showComments) {
+      setShowComments(true);
+    }
     inputRef.current?.focus();
   }
+
+  const toggleComments = () => {
+    setShowComments(value => !value);
+  }
+
+  useEffect(() => {
+    setShowComments(false);
+  }, [user])
 
   return (
     <Card maxW={600} minW={600}>
@@ -24,14 +37,17 @@ export const Post = ({ postController }: PostProps) => {
           author={postController.getAuthor()}
           post={postController.getPost()}
           focusInput={focusInput}
+          toggleComments={toggleComments}
+          index={index}
         />
       </CardHeader>
       <CardBody p={0}>
-        <PostBody
+        {showComments && <PostBody
           comments={postController.getCurrentComments()}
           user={user}
           inputRef={inputRef}
-        />
+          index={index}
+        />}
       </CardBody>
     </Card>
   )

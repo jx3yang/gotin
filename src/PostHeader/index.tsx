@@ -3,21 +3,24 @@ import { useContext } from "react";
 import { BiChat } from 'react-icons/bi'
 import { AiFillLike, AiOutlineLike } from 'react-icons/ai'
 import { BsThreeDotsVertical } from 'react-icons/bs'
-import { PostLikeContext, PostStatsContext, PostUserHasLikedContext } from '../context/post-context'
+import { PostLikeContext, PostGetStatsContext, PostUserHasLikedContext } from '../context/post-context'
 import { User } from '../types'
 
 interface PostHeaderProps {
   author: User
   post: string
   focusInput: () => void
+  toggleComments: () => void
+  index: number
 };
 
-export const PostHeader = ({ author, post, focusInput }: PostHeaderProps) => {
+export const PostHeader = ({ author, post, focusInput, toggleComments, index }: PostHeaderProps) => {
   const { username, title, avatar } = author;
   const { id: avatarId, url: avatarUrl } = avatar;
   const userHasLiked = useContext(PostUserHasLikedContext);
   const likeFunction = useContext(PostLikeContext);
-  const stats = useContext(PostStatsContext);
+  const getStats = useContext(PostGetStatsContext);
+  const stats = getStats(index);
 
   return (
     <Card boxShadow={'none'}>
@@ -38,16 +41,11 @@ export const PostHeader = ({ author, post, focusInput }: PostHeaderProps) => {
           />
         </Flex>
       </CardHeader>
-      <CardBody>
+      <CardBody pt='0' pb='0'>
         <Text textAlign='left'>
           {post}
         </Text>
       </CardBody>
-      <Image
-        objectFit='cover'
-        src='https://wonderfulengineering.com/wp-content/uploads/2014/05/train-pictures-14.jpg'
-        alt='trains'
-      />
 
       <CardFooter
         justify='space-between'
@@ -67,7 +65,7 @@ export const PostHeader = ({ author, post, focusInput }: PostHeaderProps) => {
           }
           <Flex justifyContent={'center'} alignItems='center' ml='auto'>
             <Box><BiChat size={'12px'} /></Box>
-            <Text pl='1' fontSize={'xs'}>{stats.numComments} comments</Text>
+            <Text pl='1' fontSize={'xs'} cursor='pointer' onClick={toggleComments}>{stats.numComments} comments</Text>
           </Flex>
         </Flex>
         <Box borderTop='1px' borderColor={'gray.300'} width='100%'>
@@ -75,8 +73,8 @@ export const PostHeader = ({ author, post, focusInput }: PostHeaderProps) => {
             <Button
               flex='1'
               variant='ghost'
-              leftIcon={userHasLiked ? <Box color={'blue.300'}><AiFillLike /></Box> : <AiOutlineLike />}
-              onClick={likeFunction}
+              leftIcon={userHasLiked(index) ? <Box color={'blue.300'}><AiFillLike /></Box> : <AiOutlineLike />}
+              onClick={() => likeFunction(index)}
             >
               Like
             </Button>
