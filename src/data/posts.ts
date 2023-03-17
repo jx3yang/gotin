@@ -1,118 +1,8 @@
-import { Comment, PostData } from '../types'
-import { allUsers, nonAnonUsers, anonUsers } from './users'
+import { PostData } from '../types'
+import { nonAnonUsers, anonUsers } from './users'
 
 const getNonAnonUser = (index: number) => nonAnonUsers[index % nonAnonUsers.length];
 const getAnonUser = (index: number) => anonUsers[index % anonUsers.length];
-
-let currentUserIndex = 0;
-
-const withRandomAuthors = (comments: Comment[], anon: boolean) => {
-  return comments.map(comment => {
-    const copy = {...comment};
-    copy.author = anon ? getAnonUser(currentUserIndex++) : getNonAnonUser(currentUserIndex++);
-    copy.replies = withRandomAuthors(copy.replies, anon);
-    return copy;
-  });
-}
-
-const author = getNonAnonUser(currentUserIndex++);
-
-const post = 'Trains are so fun! I think they should teach embedded systems in kindergarten :o';
-const commonComment: Comment = {
-  id: 0,
-  author,
-  content: "Trains are very fun! I especially like the part where you learn to sleep in the lab. Definitely agree with the kindergarten part lol",
-  replies: [],
-  stats: {
-    likes: 5,
-  },
-};
-const staticComments: Comment[] = [
-  {
-    ...commonComment,
-    replies: [
-      commonComment,
-      commonComment,
-    ],
-  },
-  {
-    ...commonComment,
-  },
-  {
-    ...commonComment,
-    replies: [
-      {
-        ...commonComment,
-        replies: [commonComment, commonComment],
-      },
-    ],
-  },
-];
-
-const comments: Comment[] = withRandomAuthors([...staticComments, ...staticComments, ...staticComments], false);
-
-const author2 = getAnonUser(currentUserIndex++);
-const post2 = "Should I go to UWaterloo or UofT??";
-const commonComment2: Comment = {
-  id: 0,
-  author: author2,
-  content: "Lol only UW rejects go to UofT",
-  replies: [],
-  stats: {
-    likes: 3,
-  },
-};
-const staticComments2: Comment[] = [
-  {
-    ...commonComment2,
-    replies: [
-      {
-        ...commonComment2,
-        replies: [
-          commonComment2,
-          commonComment2,
-          commonComment2,
-        ],
-      },
-    ],
-  },
-  {
-    ...commonComment2,
-  },
-  {
-    ...commonComment2,
-    replies: [
-      commonComment2,
-    ],
-  },
-];
-const comments2: Comment[] = withRandomAuthors([...staticComments2, ...staticComments2, ...staticComments2], true);
-
-const add = (a: number, b: number) => a + b;
-const getNumComments = ({ replies }: Comment): number => replies.map(getNumComments).reduce(add, 1);
-
-const allPosts: PostData[] = [
-  {
-    author,
-    post: post,
-    comments: comments,
-    stats: {
-      likes: 0,
-      numComments: comments.map(getNumComments).reduce(add, comments.length),
-    },
-  },
-  {
-    author: author2,
-    post: post2,
-    comments: comments2,
-    stats: {
-      likes: 0,
-      numComments: comments2.map(getNumComments).reduce(add, comments2.length),
-    },
-  },
-];
-
-export { allPosts };
 
 const post_1: PostData = {
   author: getNonAnonUser(0),
@@ -408,48 +298,48 @@ const post_4: PostData = {
 }
 
 const post_5: PostData = {
-  author: getAnonUser(0),
-  post: `UW vs McGill Computer Science. Which one is better?`,
+  author: getAnonUser(4),
+  post: `Thoughts on the UW engineering entrance interview? Can I use chatgpt for that sh*t?`,
   comments: [
     {
       id: 0,
-      author: getAnonUser(1),
-      content: `Neither lol it's either MIT or Stanford for CS. Or did you perhaps get a subpar SAT score? XD`,
+      author: getAnonUser(5),
+      content: `Just b urself lol`,
       replies: [
         {
           id: 0,
-          author: getAnonUser(0),
-          content: `No one asked for you opinion of US unis. Learn to read?`,
-          replies: [
-            {
-              id: 0,
-              author: getAnonUser(1),
-              content: `Lol op why so mad? Stop behaving like a typical sub 400 SAT scorer`,
-              replies: [],
-              stats: {
-                likes: 1
-              },
-            },
-          ],
+          author: getAnonUser(4),
+          content: `No i wanna be batman, does that mean that im failing the interview?`,
+          replies: [],
           stats: {
             likes: 0,
           },
         }
       ],
       stats: {
-        likes: 2,
+        likes: 1,
       }
     },
     {
       id: 0,
-      author: getAnonUser(2),
-      content: `Whichever offers the bigger scholarship`,
+      author: getAnonUser(6),
+      content: `idk ask your academic advisor`,
       replies: [
         {
           id: 0,
-          author: getAnonUser(0),
-          content: `Gotta give it to GotIners for the most constructive comments..`,
-          replies: [],
+          author: getAnonUser(4),
+          content: `he said i should ask on gotin`,
+          replies: [
+            {
+              id: 0,
+              author: getAnonUser(6),
+              content: `then ask chatgpt`,
+              replies: [],
+              stats: {
+                likes: 1,
+              },
+            },
+          ],
           stats: {
             likes: 0,
           },
@@ -461,24 +351,14 @@ const post_5: PostData = {
     },
     {
       id: 0,
-      author: getAnonUser(3),
-      content: `who asked? who cares?`,
+      author: getAnonUser(7),
+      content: `yup you can use chatgpt. the interviewer will be chatgpt itself actually`,
       replies: [
         {
           id: 0,
-          author: getAnonUser(0),
-          content: `I asked and I care`,
-          replies: [
-            {
-              id: 0,
-              author: getAnonUser(3),
-              content: `i AsKeD aNd I cArE`,
-              replies: [],
-              stats: {
-                likes: 0,
-              },
-            },
-          ],
+          author: getAnonUser(4),
+          content: `it's always been my dream to put my academic fate into the hands of a robot beep boop`,
+          replies: [],
           stats: {
             likes: 0,
           },
@@ -495,5 +375,64 @@ const post_5: PostData = {
   }
 }
 
+const post_6: PostData = {
+  author: getAnonUser(8),
+  post: `Do you use your university's servers for anything other than school or research work? I mine crypto on one of my school's data science clusters`,
+  comments: [
+    {
+      id: 0,
+      author: getAnonUser(9),
+      content: `Lol nice try IT department`,
+      replies: [
+        {
+          id: 0,
+          author: getAnonUser(8),
+          content: `for real though, with the tuition that i pay, im probably entitled to using some of that infra for my own projects`,
+          replies: [],
+          stats: {
+            likes: 0,
+          },
+        }
+      ],
+      stats: {
+        likes: 1,
+      }
+    },
+    {
+      id: 0,
+      author: getAnonUser(0),
+      content: `any normal school server will be able to detect suspiscious activities, there's no way you can mine crypto on there`,
+      replies: [
+        {
+          id: 0,
+          author: getAnonUser(8),
+          content: `well it just means that you arent smart enough to find loopholes`,
+          replies: [
+            {
+              id: 0,
+              author: getAnonUser(0),
+              content: `pic or didnt happen`,
+              replies: [],
+              stats: {
+                likes: 1,
+              },
+            },
+          ],
+          stats: {
+            likes: 2,
+          },
+        },
+      ],
+      stats: {
+        likes: 0,
+      },
+    },
+  ],
+  stats: {
+    likes: 0,
+    numComments: 1,
+  }
+}
+
 export const nonAnonPosts = [post_1, post_2, post_3]
-export const anonPosts = [post_4]
+export const anonPosts = [post_4, post_5, post_6]
