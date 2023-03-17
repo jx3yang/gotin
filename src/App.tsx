@@ -30,7 +30,7 @@ function App() {
         height={'62px'}
         backgroundColor={ colorMode === 'dark' ? 'gray.700' : 'white' }
       >
-        <Card maxW={600} minW={600} p={0} m={0} boxShadow={'none'} height='100%'>
+        <Card maxW={600} minW={'100%'} p={0} m={0} boxShadow={'none'} height='100%'>
           <Flex alignItems={'center'} height='100%'>
             <Image src={'/G.png'} height={'48px'} borderRadius={'4'} />
             <Spacer />

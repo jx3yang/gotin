@@ -31,7 +31,7 @@ export const Post = ({ postController, index }: PostProps) => {
   }, [user])
 
   return (
-    <Card maxW={600} minW={600}>
+    <Card maxW={600} minW={'100%'}>
       <CardHeader p={0}>
         <PostHeader
           author={postController.getAuthor()}
