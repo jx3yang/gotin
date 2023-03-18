@@ -352,7 +352,7 @@ const post_5: PostData = {
     {
       id: 0,
       author: getAnonUser(7),
-      content: `yup you can use chatgpt. the interviewer will be chatgpt itself actually`,
+      content: `yup you can use ChatGPT. the interviewer will be ChatGPT itself actually`,
       replies: [
         {
           id: 0,
