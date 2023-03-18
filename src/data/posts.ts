@@ -6,7 +6,7 @@ const getAnonUser = (index: number) => anonUsers[index % anonUsers.length];
 
 const post_1: PostData = {
   author: getNonAnonUser(0),
-  post: `I'm excited to announce that I will be starting my Bachelor's of Science at McGill University starting this Fall! I could not be more thrilled to be pursuing a degree that aligns with my passion!`,
+  post: `I'm excited to announce that I will be starting my Bachelor of Science at McGill University starting this Fall! I could not be more thrilled to be pursuing a degree that aligns with my passion!`,
   comments: [
     {
       id: 0,
