@@ -30,6 +30,7 @@ export const PostUserHasLikedContext = createContext<(index: number) => boolean>
 export const PostCommentContext = createContext<(content: string, index: number) => void>(() => {});
 export const PostCommentLikeContext = createContext<(id: number, index: number) => void>(() => {});
 export const PostUserLikedCommentsContext = createContext<(index: number) => Set<number>>(() => new Set());
+export const PostReplyContext = createContext<(content: string, index: number, parentCommentId: number) => void>(() => {});
 
 interface Props {
   isStatic: boolean
@@ -59,7 +60,7 @@ export const PostProvider = ({ isStatic, children }: Props) => {
     return a;
   }
 
-  const stepContext1 = () => {
+  const stepContext = () => {
     setPostsState(currentState => {
       const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
       if (anonActive) {
@@ -82,7 +83,7 @@ export const PostProvider = ({ isStatic, children }: Props) => {
     });
   };
 
-  const stepLikes1 = () => {
+  const stepLikes = () => {
     setPostsState(currentState => {
       const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
       if (anonActive) {
@@ -105,7 +106,7 @@ export const PostProvider = ({ isStatic, children }: Props) => {
     });
   };
 
-  const switchContext1 = () => {
+  const switchContext = () => {
     setPostsState(currentState => {
       const { anonActive } = currentState;
       return {
@@ -115,7 +116,7 @@ export const PostProvider = ({ isStatic, children }: Props) => {
     });
   };
 
-  const likeContext1 = (index: number) => {
+  const likeContext = (index: number) => {
     setPostsState(currentState => {
       const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
       if (anonActive) {
@@ -128,7 +129,7 @@ export const PostProvider = ({ isStatic, children }: Props) => {
     });
   };
 
-  const addCommentContext1 = (content: string, index: number) => {
+  const addCommentContext = (content: string, index: number) => {
     setPostsState(currentState => {
       const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
       if (anonActive) {
@@ -141,7 +142,20 @@ export const PostProvider = ({ isStatic, children }: Props) => {
     });
   };
 
-  const likeCommentContext1 = (id: number, index: number) => {
+  const addReplyContext = (content: string, index: number, parentCommentId: number) => {
+    setPostsState(currentState => {
+      const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
+      if (anonActive) {
+        anonPostControllers[index].addUserReply(user, content, parentCommentId);
+        return {...currentState};
+      } else {
+        nonAnonPostControllers[index].addUserReply(user, content, parentCommentId);
+        return {...currentState};
+      }
+    });
+  };
+
+  const likeCommentContext = (id: number, index: number) => {
     setPostsState(currentState => {
       const { nonAnonPostControllers, anonPostControllers, anonActive } = currentState;
       if (anonActive) {
@@ -183,11 +197,11 @@ export const PostProvider = ({ isStatic, children }: Props) => {
 
   useEffect(() => {
     const stepInterval = setInterval(() => {
-      stepContext1();
+      stepContext();
     }, isStatic ? 0 : 2000);
 
     const likesInterval = setInterval(() => {
-      stepLikes1();
+      stepLikes();
     }, isStatic ? 0 : 1000);
 
     return () => {
@@ -203,11 +217,11 @@ export const PostProvider = ({ isStatic, children }: Props) => {
     },
     {
       context: PostSwitchContext,
-      value: switchContext1,
+      value: switchContext,
     },
     {
       context: PostLikeContext,
-      value: likeContext1,
+      value: likeContext,
     },
     {
       context: PostGetStatsContext,
@@ -219,15 +233,19 @@ export const PostProvider = ({ isStatic, children }: Props) => {
     },
     {
       context: PostCommentContext,
-      value: addCommentContext1,
+      value: addCommentContext,
     },
     {
       context: PostCommentLikeContext,
-      value: likeCommentContext1,
+      value: likeCommentContext,
     },
     {
       context: PostUserLikedCommentsContext,
       value: getUserLikedComments,
+    },
+    {
+      context: PostReplyContext,
+      value: addReplyContext,
     },
   ], children);
 }

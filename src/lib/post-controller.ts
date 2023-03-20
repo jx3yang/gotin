@@ -3,10 +3,37 @@ import { ItIterator } from './it-iterator'
 import { Iterator } from './iterator'
 import { TreeIteratorItem, TreeLevelIterator } from './tree-iterator'
 
+type ReplyKey = { parentId: number, index: number };
+
+const findParentComment = (
+  path: number[],
+  currentComments: Comment[],
+  userAddedCommentsIndices: number[],
+  userAddedReplies: ReplyKey[],
+) => {
+  let index = path[0];
+  for (let i = 0; i < userAddedCommentsIndices.length; i++) {
+    if (userAddedCommentsIndices[i] <= index) {
+      index++;
+    } else {
+      break;
+    }
+  }
+  let parentComment = currentComments[index];
+  for (let i = 1; i < path.length - 1; i++) {
+    let subIndex = path[i];
+    let pid = parentComment.id;
+    subIndex += userAddedReplies.filter(({ parentId, index: idx }) => parentId === pid && idx <= subIndex).length;
+    parentComment = parentComment.replies[subIndex];
+  }
+  return parentComment;
+}
+
 const getNewComments = (
   currentComments: Comment[],
   iterator: Iterator<TreeIteratorItem<Comment>>,
   userAddedCommentsIndices: number[],
+  userAddedReplies: ReplyKey[],
   nextId: number,
   targetNumLikes: Map<number, number>,
 ) => {
@@ -21,19 +48,20 @@ const getNewComments = (
   if (path.length == 1) {
     return { comments: [...currentComments, { ...newComment, replies: [], id: nextId, stats: { likes: 0 } }], hasChanged: true };
   }
-  let index = path[0];
-  for (let i = 0; i < userAddedCommentsIndices.length; i++) {
-    if (userAddedCommentsIndices[i] <= index) {
-      index++;
-    } else {
-      break;
-    }
-  }
+  let parentComment = findParentComment(path, currentComments, userAddedCommentsIndices, userAddedReplies);
+  // let index = path[0];
+  // for (let i = 0; i < userAddedCommentsIndices.length; i++) {
+  //   if (userAddedCommentsIndices[i] <= index) {
+  //     index++;
+  //   } else {
+  //     break;
+  //   }
+  // }
 
-  let parentComment = currentComments[index];
-  for (let i = 1; i < path.length - 1; i++) {
-    parentComment = parentComment.replies[path[i]];
-  }
+  // let parentComment = currentComments[index];
+  // for (let i = 1; i < path.length - 1; i++) {
+  //   parentComment = parentComment.replies[path[i]];
+  // }
   parentComment.replies.push({ ...newComment, replies: [], id: nextId, stats: { likes: 0 } });
   return { comments: [...currentComments], hasChanged: true };
 }
@@ -43,6 +71,7 @@ export class PostController {
   postData: PostData
   userHasLiked: boolean
   userAddedCommentsIndices: number[]
+  userAddedReplies: ReplyKey[]
   nextId: number
   userLikedComments: Set<number>
   targetNumLikes: Map<number, number>
@@ -64,6 +93,7 @@ export class PostController {
     this.nextId = 0;
     this.userLikedComments = new Set<number>();
     this.targetNumLikes = new Map<number, number>();
+    this.userAddedReplies = [];
   }
 
   step() {
@@ -71,6 +101,7 @@ export class PostController {
       this.postData.comments,
       this.commentTreeIterator,
       this.userAddedCommentsIndices,
+      this.userAddedReplies,
       this.nextId,
       this.targetNumLikes,
     );
@@ -158,6 +189,17 @@ export class PostController {
     this.nextId++;
     this.postData.stats.numComments++;
     this.userAddedCommentsIndices.push(this.postData.comments.length - 1);
+  }
+
+  addUserReply(user: User, content: string, parentCommentId: number) {
+    const comment = { author: user, content, replies: [], stats: { likes: 0 }, id: this.nextId };
+    const parentComment = this.findComment(parentCommentId, this.postData.comments);
+    if (parentComment) {
+      parentComment.replies.push({...comment});
+      this.nextId++;
+      this.postData.stats.numComments++;
+      this.userAddedReplies.push({ parentId: parentCommentId, index: parentComment.replies.length - 1 });
+    }
   }
 
   likeComment(id: number) {

@@ -1,7 +1,7 @@
-import { Avatar, Box, Flex, Text, Card, CardBody, CardHeader, Stack, useColorMode, Button } from '@chakra-ui/react';
-import { useContext } from 'react';
+import { Avatar, Box, Flex, Text, Card, CardBody, CardHeader, Stack, useColorMode, Button, Input } from '@chakra-ui/react';
+import { useContext, useState } from 'react';
 import { AiFillLike } from 'react-icons/ai';
-import { PostCommentLikeContext, PostUserLikedCommentsContext } from '../../context/post-context';
+import { PostCommentLikeContext, PostReplyContext, PostUserLikedCommentsContext } from '../../context/post-context';
 import { Avatar as AvatarType, Comment } from '../../types';
 
 interface CommentCardProps {
@@ -12,8 +12,19 @@ interface CommentCardProps {
 const CommentCard = ({ comment, index }: CommentCardProps) => {
   const { id, author, content } = comment;
   const { username, title } = author;
+  const [isShowReply, setShowReply] = useState(false);
   const likeComment = useContext(PostCommentLikeContext);
   const userLikedComments = useContext(PostUserLikedCommentsContext);
+  const [replyValue, setReplyValue] = useState("");
+  const replyFunction = useContext(PostReplyContext);
+
+  const showReply = () => {
+    setShowReply(true);
+  }
+
+  const hideReply = () => {
+    setShowReply(false);
+  }
 
   return (
     <Card maxW='full' boxShadow='none' borderRadius='0' p='2' pt='4'>
@@ -55,10 +66,31 @@ const CommentCard = ({ comment, index }: CommentCardProps) => {
           <Text fontSize='xs' fontWeight={'light'}>|</Text>
           <Button
             variant={'ghost'} p='0' height={'5'} m='0'
+            onClick={showReply}
           >
             <Text fontSize='xs' fontWeight={'bold'}> Reply </Text>
           </Button>
         </Flex>
+        {isShowReply &&
+          <Box width='250px' pt='4'>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                replyFunction(replyValue, index, id);
+                setReplyValue("");
+                hideReply();
+              }}
+              >
+              <Input
+                height={'30px'}
+                placeholder="Add a reply..."
+                size={'md'}
+                value={replyValue}
+                onChange={(e) => setReplyValue(e.target.value)}
+              />
+            </form>
+          </Box>
+        }
       </CardBody>
     </Card>
   )
